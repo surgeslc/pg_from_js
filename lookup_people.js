@@ -13,9 +13,19 @@ function formatDate(date) {
 }
 
 const pg = require("pg");
+var knex = require('knex')({
+  client: 'pg',
+  connection: {
+    host : 'localhost',
+    user : 'kjensen',
+    password : '',
+    database : 'w4d2'
+  }
+});
 const settings = require("./settings"); // settings.json
 
 const searchValue = process.argv[2];
+//console.log("searchValue:", searchValue);
 const queryString = "SELECT * FROM famous_people WHERE last_name = '" + searchValue + "';";
 
 const client = new pg.Client({

@@ -13,58 +13,28 @@ function formatDate(date) {
 }
 
 const pg = require("pg");
+const settings = require("./settings"); // settings.json
+
+const searchValue = process.argv[2];
+const queryString = "SELECT * FROM famous_people WHERE last_name = '" + searchValue + "';";
+
 var knex = require('knex')({
   client: 'pg',
   connection: {
     host : 'localhost',
-    user : 'kjensen',
+    user : '',
     password : '',
-    database : 'w4d2'
+    database : 'famous_people'
   }
 });
-const settings = require("./settings"); // settings.json
 
-const searchValue = process.argv[2];
-//console.log("searchValue:", searchValue);
-const queryString = "SELECT * FROM famous_people WHERE last_name = '" + searchValue + "';";
+// MODEL
+// select short, long from urls where short = "abc";
+// knex.select("short", "long").from("urls").where({ short: "abc" });
 
-const client = new pg.Client({
-  user     : settings.user,
-  password : settings.password,
-  database : settings.database,
-  host     : settings.hostname,
-  port     : settings.port,
-  ssl      : settings.ssl
-});
-
-
-client.connect((err) => {
-  if (err) {
-    return console.error("Connection Error", err);
-  }
-
-  client.query(queryString, (err, result) => {
-    if (err) {
-      return console.error("error running query", err);
-    }
-
-    console.log("Found", result.rows.length, "person(s) by the name '" + searchValue + "':");
-
-    result.rows.forEach(function(row) {
-      console.log("-", row.id, row.first_name, row.last_name + ", born '" + formatDate(row.birthdate) + "'");
-    })
-
-    client.end();
+knex.select().from("famous_people").where({ last_name: searchValue }); asCallback((error, results) => {
+  // handle error
+  results.forEach((result) => {
+    console.log("-", result.id, result.first_name, result.last_name, ", born ", result.birthdate);
   });
 });
-
-
-
-/* Write a new script file in this same repo that expects to take in a single command line argument (through ARGV) and use it to find and output famous people by their first or last name.
-The experience should look like this:
-
-node lookup_people.js Lincoln
-Searching ...
-Found 1 person(s) by the name 'Lincoln':
-- 1: Abraham Lincoln, born '1809-02-12'
-*/
